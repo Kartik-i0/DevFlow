@@ -1,5 +1,6 @@
-import bcrypt from 'bcryptjs'
 import { Request , Response } from "express";
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken';
 import prisma from "../config/db";
 
 
@@ -18,16 +19,24 @@ export const createUser = async(req:Request, res:Response ) => {
             }
         });
 
+        const token = jwt.sign(
+            {userId: user.id, email:user.email},
+            process.env.JWT_SECRET || 'fallback_secret',
+            {expiresIn: "7d"}
+        );
+
+
         res.status(201).json({
             status: "success",
             message:"user created successfully",
+            token,
             data: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 createdAt: user.createdAt
             }
-        })
+        });
     }catch(error: any){
         res.status(400).json({
             status:"error",
@@ -78,9 +87,17 @@ export const loginUser = async (req:Request , res:Response) => {
         });
      }
 
+     const token = jwt.sign(
+        {userId: user.id, email:user.email},
+        process.env.JWT_SECRET || 'fallback_secret',
+        {expiresIn: "7d"}
+    );
+
+
      return res.status(200).json({
         status:"success",
         message:"login successful",
+        token,
         data:{
             id: user.id,
             name: user.name,

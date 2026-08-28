@@ -12,6 +12,31 @@ model User {
   email     String   @unique 
   name      String
   password  String
+  projects  Project[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  status      String   @default("PLANNED") // e.g. PLANNED, IN_PROGRESS, COMPLETED
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]   // 1 Project has many Tasks
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  status      String   @default("TODO")    // e.g. TODO, IN_PROGRESS, DONE
+  priority    String   @default("MEDIUM")  // e.g. LOW, MEDIUM, HIGH
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
