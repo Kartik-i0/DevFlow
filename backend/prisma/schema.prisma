@@ -8,35 +8,118 @@ datasource db {
 }
 
 model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  name             String
+  password         String
+  avatarUrl        String?
+  workspaceMembers WorkspaceMember[]
+  cardMembers      CardMember[]
+  comments         Comment[]
+  activities       Activity[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Workspace {
+  id          String            @id @default(uuid())
+  name        String
+  description String?           @db.Text
+  boards      Board[]
+  members     WorkspaceMember[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  role        String    @default("MEMBER") // ADMIN, MEMBER
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Board {
+  id          String     @id @default(uuid())
+  title       String
+  bgImage     String?
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lists       List[]
+  labels      Label[]
+  activities  Activity[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model List {
   id        String   @id @default(uuid())
-  email     String   @unique 
-  name      String
-  password  String
-  projects  Project[]
+  title     String
+  order     Float    // Position for column ordering
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards     Card[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Project {
-  id          String   @id @default(uuid())
+model Card {
+  id          String       @id @default(uuid())
   title       String
-  description String?  @db.Text
-  status      String   @default("PLANNED") // e.g. PLANNED, IN_PROGRESS, COMPLETED
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks       Task[]   // 1 Project has many Tasks
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  description String?      @db.Text
+  order       Float        // Position for drag-and-drop ordering
+  dueDate     DateTime?
+  listId      String
+  list        List         @relation(fields: [listId], references: [id], onDelete: Cascade)
+  members     CardMember[]
+  labels      CardLabel[]
+  comments    Comment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
+model CardMember {
+  id     String @id @default(uuid())
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-model Task {
-  id          String   @id @default(uuid())
-  title       String
-  status      String   @default("TODO")    // e.g. TODO, IN_PROGRESS, DONE
-  priority    String   @default("MEDIUM")  // e.g. LOW, MEDIUM, HIGH
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Label {
+  id      String      @id @default(uuid())
+  name    String
+  color   String      // Hex color e.g., #ef4444 (Red), #3b82f6 (Blue)
+  boardId String
+  board   Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards   CardLabel[]
+}
+
+model CardLabel {
+  id      String @id @default(uuid())
+  cardId  String
+  card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  labelId String
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  text      String   @db.Text
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  action    String   // e.g., "moved card", "created list", "assigned user"
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
