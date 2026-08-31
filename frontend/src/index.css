@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;                /* Pure White Background */
+    --foreground: 222.2 84% 4.9%;           /* Black / Dark Slate Text */
+
+    --card: 0 0% 100%;                      /* White Card */
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;           /* Black Button */
+    --primary-foreground: 210 40% 98%;      /* White Button Text */
+
+    --secondary: 210 40% 96.1%;             /* Light Gray Secondary */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;                 /* Muted Gray */
+    --muted-foreground: 215.4 16.3% 46.9%;  /* Slate Gray Text */
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;            /* Light Gray Border */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;           /* Dark Slate (#020617) */
+    --foreground: 210 40% 98%;              /* White Text */
+
+    --card: 222.2 84% 6.5%;                 /* Dark Slate Card */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;                 /* White Button in Dark Mode */
+    --primary-foreground: 222.2 47.4% 11.2%;/* Black Text on Button */
+
+    --secondary: 217.2 32.6% 17.5%;         /* Slate-800 Gray */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;    /* Slate-400 Text */
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;            /* Slate Border */
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Fix Chrome / Edge autofill turning input fields white */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #f8fafc !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important; /* Dark Slate Input Background */
+  transition: background-color 5000s ease-in-out 0s;
+}

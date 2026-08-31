@@ -8,7 +8,7 @@ import { io } from '../index';
 
 // POST /api/v1/cards - Create a card in a list
 export const createCard = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { title, listId, description } = req.body;
+  const { title, listId, description, boardId } = req.body;
 
   if (!title || !listId) {
     throw new AppError('Title and listId are required', 400);
@@ -31,11 +31,17 @@ export const createCard = asyncHandler(async (req: AuthRequest, res: Response) =
     }
   });
 
+  // ⚡ Broadcast real-time event to teammates viewing the board
+  if (boardId) {
+    io.to(`board_${boardId}`).emit('card_created', card);
+  }
+
   res.status(201).json({
     status: 'success',
     data: card
   });
 });
+
 
 export const moveCard = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;

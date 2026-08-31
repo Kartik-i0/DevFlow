@@ -3,6 +3,8 @@ import prisma from '../config/db';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError } from '../utils/appError';
 import { AuthRequest } from '../middleware/auth.middleware';
+import {io} from "../index"
+
 
 // POST /api/v1/lists - Create a new column in a Board
 export const createList = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -28,9 +30,16 @@ export const createList = asyncHandler(async (req: AuthRequest, res: Response) =
     }
   });
 
+  const newListWithCards = {...list, cards:[]}
+
+  // BroadCast real-time event to teammate viewing the board  
+  if(boardId){
+    io.to(`board_${boardId}`).emit('list_created', newListWithCards);
+  }
+  
   res.status(201).json({
     status: 'success',
-    data: list
+    data: newListWithCards
   });
 });
 

@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import http from 'http';
+import cors from 'cors';
 import { Server } from 'socket.io';
 
 
@@ -18,6 +19,10 @@ import { AppError } from './utils/appError';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Enable CORS for all Express HTTP routes
+app.use(cors());
+
 
 // Create HTTP server & attach Socket.IO
 const server = http.createServer(app);
@@ -66,7 +71,7 @@ app.use("/api/v1/lists", listRouter);
 app.use("/api/v1/cards", cardRouter);
 
 // 404 Unhandled Route Handler
-app.all('*', (req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

@@ -177,24 +177,27 @@ User A (Drags Card X to Column 'Done')
 
 ## 🚀 4. Step-by-Step Development Phases
 
-### Phase 1: Trello Schema Alignment (Current Step)
+### Phase 1: Trello Schema Alignment
 - [x] Docker MySQL + Express + Prisma setup
 - [x] User Registration + Login + JWT Auth
-- [ ] Update `schema.prisma` with Trello models (`Workspace`, `Board`, `List`, `Card`, `Label`, `Comment`)
-- [ ] Run `npx prisma db push`
+- [x] Update `schema.prisma` with Trello models (`Workspace`, `Board`, `List`, `Card`, `Label`, `Comment`)
+- [x] Run `npx prisma db push`
 
 ### Phase 2: Socket.IO Integration
-- [ ] Install `socket.io` & `@types/socket.io`
-- [ ] Configure `http.createServer(app)` in `src/index.ts`
-- [ ] Implement Socket Room joining (`board_room`) & live event emitters
+- [x] Install `socket.io` & `@types/socket.io`
+- [x] Configure `http.createServer(app)` in `src/index.ts`
+- [x] Implement Socket Room joining (`board_room`) & live event emitters
 
 ### Phase 3: Trello Backend REST + Realtime Endpoints
-- [ ] Workspaces & Boards API (`POST /boards`, `GET /boards/:id`)
-- [ ] Lists API (`POST /lists`, `PATCH /lists/reorder`)
-- [ ] Cards API (`POST /cards`, `PATCH /cards/move`, `DELETE /cards/:id`)
+- [x] Workspaces & Boards API (`POST /boards`, `GET /boards/:id`)
+- [x] Lists API (`POST /lists`, `PATCH /lists/reorder`)
+- [x] Cards API (`POST /cards`, `PATCH /cards/move`, `DELETE /cards/:id`)
 
-### Phase 4: Frontend Trello Kanban UI (Vite + React + Tailwind)
-- [ ] Initialize React + TypeScript in `frontend/`
-- [ ] Add `@hello-pangea/dnd` or `dnd-kit` for fluid drag-and-drop cards & columns
-- [ ] Build Glassmorphism Board View, Sidebar, & Modal Card details drawer
+### Phase 4: Frontend Trello Kanban UI (Vite + React + Shadcn UI + TailwindCSS)
+- [x] Initialize React + TypeScript in `frontend/`
+- [x] Setup Shadcn UI + Radix UI + TailwindCSS
+- [x] Add `@hello-pangea/dnd`, `lucide-react`, `socket.io-client`, `axios`
+- [ ] Build Services & Socket Client (`api.ts`, `socket.ts`, `AuthContext.tsx`)
+- [ ] Build Glassmorphism Board View, Sidebar, & Modal Card details drawer using Shadcn UI
 - [ ] Connect Socket.IO client (`socket.io-client`) for instant UI sync
+
