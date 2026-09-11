@@ -56,7 +56,7 @@ export const moveCard = asyncHandler(async (req: AuthRequest, res: Response) => 
     }
   });
 
-  // 2. Broadcast to all teammates viewing boardId
+  // ⚡ Broadcast real-time card movement to teammates
   if (boardId) {
     io.to(`board_${boardId}`).emit('card_moved', updatedCard);
   }
@@ -64,5 +64,48 @@ export const moveCard = asyncHandler(async (req: AuthRequest, res: Response) => 
   res.status(200).json({
     status: 'success',
     data: updatedCard
+  });
+});
+
+// PATCH /api/v1/cards/:id - Update card details (title, description, dueDate)
+export const updateCard = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { title, description, dueDate, boardId } = req.body;
+
+  const card = await prisma.card.update({
+    where: { id: id as string },
+    data: {
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null })
+    }
+  });
+
+  if (boardId) {
+    io.to(`board_${boardId}`).emit('card_updated', card);
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: card
+  });
+});
+
+// DELETE /api/v1/cards/:id - Delete card
+export const deleteCard = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { boardId } = req.query;
+
+  await prisma.card.delete({
+    where: { id: id as string }
+  });
+
+  if (boardId) {
+    io.to(`board_${boardId}`).emit('card_deleted', { id });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Card deleted successfully'
   });
 });
