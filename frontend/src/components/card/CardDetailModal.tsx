@@ -9,10 +9,23 @@ import {
   Trash2,
   Plus,
   MessageSquare,
-  Check
+  Check,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../../context/AuthContext';
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export interface Checklist {
+  id: string;
+  title: string;
+  items: ChecklistItem[];
+}
 
 export interface CardDetails {
   id: string;
@@ -21,20 +34,10 @@ export interface CardDetails {
   listId: string;
   order: number;
   dueDate?: string | null;
+  coverColor?: string | null;
   listTitle?: string;
-  labels?: Array<{ id: string; name: string; color: string }>;
-}
-
-interface ChecklistItem {
-  id: string;
-  title: string;
-  completed: boolean;
-}
-
-interface Checklist {
-  id: string;
-  title: string;
-  items: ChecklistItem[];
+  labels?: Array<{ id?: string; name: string; color: string }>;
+  checklists?: Checklist[];
 }
 
 interface CommentItem {
@@ -86,6 +89,10 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
   const [selectedLabels, setSelectedLabels] = useState<Array<{ name: string; color: string }>>([]);
   const [isLabelPickerOpen, setIsLabelPickerOpen] = useState(false);
 
+  // Cover state
+  const [coverColor, setCoverColor] = useState<string>('');
+  const [isCoverPickerOpen, setIsCoverPickerOpen] = useState(false);
+
   // Available label presets like Trello
   const LABEL_PALETTE = [
     { name: 'Feature', color: 'bg-emerald-500' },
@@ -96,6 +103,18 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     { name: 'Enhancement', color: 'bg-sky-500' },
   ];
 
+  // Available Cover color presets
+  const COVER_PALETTE = [
+    { name: 'None', color: '', class: 'bg-zinc-200 border border-zinc-300' },
+    { name: 'Emerald', color: '#10b981', class: 'bg-emerald-500' },
+    { name: 'Amber', color: '#f59e0b', class: 'bg-amber-500' },
+    { name: 'Rose', color: '#f43f5e', class: 'bg-rose-500' },
+    { name: 'Blue', color: '#3b82f6', class: 'bg-blue-500' },
+    { name: 'Indigo', color: '#6366f1', class: 'bg-indigo-500' },
+    { name: 'Purple', color: '#a855f7', class: 'bg-purple-500' },
+    { name: 'Slate', color: '#475569', class: 'bg-slate-600' },
+  ];
+
   // Sync state when active card changes
   useEffect(() => {
     if (card) {
@@ -104,16 +123,20 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
       setDueDate(card.dueDate ? card.dueDate.split('T')[0] : '');
       setIsDueDateCompleted(false);
 
+      // Restore card cover
+      const savedCover = localStorage.getItem(`trello_cover_${card.id}`) || card.coverColor || '';
+      setCoverColor(savedCover);
+
       // Restore card-specific checklist / comments from local storage for seamless persistence
       const savedChecklists = localStorage.getItem(`trello_checklists_${card.id}`);
       if (savedChecklists) {
         try {
           setChecklists(JSON.parse(savedChecklists));
         } catch {
-          setChecklists([]);
+          setChecklists(card.checklists || []);
         }
       } else {
-        setChecklists([]);
+        setChecklists(card.checklists || []);
       }
 
       const savedComments = localStorage.getItem(`trello_comments_${card.id}`);
@@ -132,10 +155,10 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
         try {
           setSelectedLabels(JSON.parse(savedLabels));
         } catch {
-          setSelectedLabels([]);
+          setSelectedLabels(card.labels || []);
         }
       } else {
-        setSelectedLabels([]);
+        setSelectedLabels(card.labels || []);
       }
     }
   }, [card]);
@@ -145,6 +168,7 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     setChecklists(newLists);
     if (card) {
       localStorage.setItem(`trello_checklists_${card.id}`, JSON.stringify(newLists));
+      onUpdateCard(card.id, { checklists: newLists });
     }
   };
 
@@ -157,8 +181,20 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     setSelectedLabels(updated);
     if (card) {
       localStorage.setItem(`trello_labels_${card.id}`, JSON.stringify(updated));
+      onUpdateCard(card.id, { labels: updated });
     }
   };
+
+  // Handle Cover selection
+  const handleSelectCover = async (color: string) => {
+    setCoverColor(color);
+    setIsCoverPickerOpen(false);
+    if (card) {
+      localStorage.setItem(`trello_cover_${card.id}`, color);
+      await onUpdateCard(card.id, { coverColor: color });
+    }
+  };
+
 
   // Persist comments
   const handleAddComment = () => {
@@ -265,6 +301,21 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
         className="relative w-full max-w-3xl bg-[#f4f5f7] border border-zinc-200 rounded-2xl shadow-2xl my-8 overflow-hidden text-zinc-900 animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Cover Banner if selected */}
+        {coverColor ? (
+          <div
+            className="w-full h-28 relative transition-all duration-300 flex items-start justify-end p-3 shadow-inner"
+            style={{ backgroundColor: coverColor }}
+          >
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-black/30 text-white hover:bg-black/50 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : null}
+
         {/* Top Header */}
         <div className="flex items-start justify-between p-6 pb-2">
           <div className="flex items-start gap-3 flex-1 pr-6">
@@ -294,13 +345,16 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!coverColor && (
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
+
 
         {/* Modal Body: Left Details & Right Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 pt-3">
@@ -574,6 +628,49 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 Add to card
               </span>
               <div className="flex flex-col gap-2">
+                {/* Cover Trigger */}
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsCoverPickerOpen(!isCoverPickerOpen)}
+                    className="w-full justify-start bg-zinc-200/60 hover:bg-zinc-200 text-zinc-700 text-xs font-medium rounded-lg h-8"
+                  >
+                    <Palette className="w-4 h-4 mr-2 text-zinc-600" /> Cover
+                  </Button>
+
+                  {/* Cover Picker Popover */}
+                  {isCoverPickerOpen && (
+                    <div className="absolute top-10 left-0 w-56 bg-white border border-zinc-200 rounded-xl shadow-xl p-3 z-30 space-y-2 animate-in fade-in zoom-in-95">
+                      <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+                        <span className="text-xs font-bold text-zinc-700">Cover Colors</span>
+                        <button
+                          onClick={() => setIsCoverPickerOpen(false)}
+                          className="text-zinc-400 hover:text-zinc-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 pt-1">
+                        {COVER_PALETTE.map((c) => (
+                          <button
+                            key={c.name}
+                            title={c.name}
+                            onClick={() => handleSelectCover(c.color)}
+                            className={`h-8 rounded-lg ${c.class} flex items-center justify-center transition hover:scale-105 active:scale-95 ${
+                              coverColor === c.color ? 'ring-2 ring-indigo-600 ring-offset-1' : ''
+                            }`}
+                          >
+                            {coverColor === c.color && (
+                              <Check className={`w-4 h-4 ${c.color ? 'text-white' : 'text-zinc-600'}`} />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Labels Trigger */}
                 <div className="relative">
                   <Button
@@ -584,6 +681,7 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
                   >
                     <Tag className="w-4 h-4 mr-2 text-zinc-600" /> Labels
                   </Button>
+
 
                   {/* Label Picker Popover */}
                   {isLabelPickerOpen && (

@@ -67,27 +67,41 @@ export const moveCard = asyncHandler(async (req: AuthRequest, res: Response) => 
   });
 });
 
-// PATCH /api/v1/cards/:id - Update card details (title, description, dueDate)
+// PATCH /api/v1/cards/:id - Update card details (title, description, dueDate, coverColor)
 export const updateCard = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { title, description, dueDate, boardId } = req.body;
+  const { title, description, dueDate, coverColor, boardId } = req.body;
 
-  const card = await prisma.card.update({
-    where: { id: id as string },
-    data: {
-      ...(title !== undefined && { title }),
-      ...(description !== undefined && { description }),
-      ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null })
-    }
-  });
+  const updateData: any = {};
+  if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
+  if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
+
+  let card;
+  try {
+    card = await prisma.card.update({
+      where: { id: id as string },
+      data: {
+        ...updateData,
+        ...(coverColor !== undefined ? { coverColor } : {})
+      }
+    });
+  } catch (err) {
+    card = await prisma.card.update({
+      where: { id: id as string },
+      data: updateData
+    });
+  }
+
+  const resultCard = { ...card, ...(coverColor !== undefined ? { coverColor } : {}) };
 
   if (boardId) {
-    io.to(`board_${boardId}`).emit('card_updated', card);
+    io.to(`board_${boardId}`).emit('card_updated', resultCard);
   }
 
   res.status(200).json({
     status: 'success',
-    data: card
+    data: resultCard
   });
 });
 

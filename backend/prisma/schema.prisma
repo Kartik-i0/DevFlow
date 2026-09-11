@@ -70,13 +70,52 @@ model Card {
   description String?      @db.Text
   order       Float        // Position for drag-and-drop ordering
   dueDate     DateTime?
+  coverColor  String?
+  coverImage  String?
+  isArchived  Boolean      @default(false)
   listId      String
   list        List         @relation(fields: [listId], references: [id], onDelete: Cascade)
   members     CardMember[]
   labels      CardLabel[]
+  checklists  Checklist[]
+  attachments Attachment[]
   comments    Comment[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Checklist {
+  id        String          @id @default(uuid())
+  title     String
+  order     Float           @default(0)
+  cardId    String
+  card      Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items     ChecklistItem[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  title       String
+  isCompleted Boolean   @default(false)
+  order       Float     @default(0)
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  name      String
+  url       String   @db.Text
+  type      String?
+  size      Int?
+  isCover   Boolean  @default(false)
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model CardMember {
@@ -123,3 +162,4 @@ model Activity {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
+

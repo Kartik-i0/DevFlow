@@ -48,7 +48,14 @@ export const createUser = async(req:Request, res:Response ) => {
 // GET /api/v1/users/all - get all users
 export const getUsers =  async (req:Request, res:Response) => {
     try{
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                avatarUrl: true
+            }
+        });
         res.status(200).json({
             status:"success",
             count: users.length,
@@ -56,11 +63,12 @@ export const getUsers =  async (req:Request, res:Response) => {
         });  
     }catch(err){
         res.status(500).json({
-            status:"success",
-            message:"unable to fetch user"
+            status:"error",
+            message:"unable to fetch users"
         });
     }
 };
+
 
 // POST  /api/v1/user/login  
 export const loginUser = async (req:Request , res:Response) => {

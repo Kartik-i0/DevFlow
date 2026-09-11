@@ -13,6 +13,7 @@ import userRouter from './routes/user.routes';
 import boardRouter from './routes/board.routes';
 import listRouter from './routes/list.routes';
 import cardRouter from './routes/card.routes';
+import workspaceRouter from './routes/workspace.routes';
 import { authenticateUser } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { AppError } from './utils/appError';
@@ -66,9 +67,12 @@ app.get('/', (req: Request, res: Response) => {
 // API Routes
 app.use("/health", healthRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/boards", boardRouter);
 app.use("/api/v1/lists", listRouter);
 app.use("/api/v1/cards", cardRouter);
+app.use("/api/v1/workspaces", workspaceRouter);
+
 
 // 404 Unhandled Route Handler
 app.use((req: Request, res: Response, next: NextFunction) => {
