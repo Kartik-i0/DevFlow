@@ -1,291 +1,343 @@
-# DevFlow — Full-Stack Real-Time Project Management Platform (Trello Clone)
-
 <div align="center">
 
-![DevFlow](https://img.shields.io/badge/DevFlow-Trello--Clone-6366f1?style=for-the-badge&logo=trello&logoColor=white)
-![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Express](https://img.shields.io/badge/Express_5-000000?style=for-the-badge&logo=express&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma_ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL_8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+# DevFlow
 
-**A high-performance, real-time Kanban project management system built with modern engineering practices, featuring collaborative workspaces, instant drag-and-drop board synchronization, member permission controls, and a signature off-white & zinc design aesthetic.**
+### Full-Stack Project Management Platform
 
-[Features](#-key-features) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [API Documentation](#-api-documentation) • [Real-Time WebSocket Events](#-real-time-websocket-events) • [Demo Credentials](#-demo-credentials)
+**A Trello-inspired Kanban board application with real-time collaboration, workspace management, and rich card details.**
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Express](https://img.shields.io/badge/Express-5-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?style=flat-square&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?style=flat-square&logo=socket.io&logoColor=white)](https://socket.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
 
 </div>
 
 ---
 
-## 🌟 Key Features
+## What is DevFlow?
 
-### 🏢 Workspaces & Multi-Tenancy
-- **Workspace Lifecycle**: Create, switch, customize, and manage multiple workspaces.
-- **Role-Based Access**: Workspace owners and administrators can manage roles (`ADMIN` vs. `MEMBER`).
-- **Teammate Autocomplete**: Instant search and 1-click addition of registered teammates to workspaces.
-- **Per-Workspace Board Isolation**: Boards are organized and isolated under active workspaces.
+DevFlow is a full-stack project management tool modelled after Trello. It lets teams organise work into **Workspaces → Boards → Lists → Cards** with real-time updates across all connected collaborators.
 
-### 📋 Interactive Kanban Boards
-- **Smooth Drag-and-Drop**: Fluid card and column reordering powered by `@hello-pangea/dnd`.
-- **Automated Starter Lists**: New boards automatically provision standard workflow columns ("To Do", "In Progress", "Done").
-- **Isolated List Creation**: Zero event interference with drag monitors when creating lists.
-- **Card Filters**: Real-time keyword filter input in the board navigation bar.
+### Highlights
 
-### 👥 Real-Time Board Collaboration
-- **Add & Share Members**: Invite team members by email or quick-add from workspace users.
-- **Live Avatar Stacks**: Shows active members in the board header with role badges.
-- **Socket.IO Room Synchronization**: Instant multi-user broadcasts for cards moved, lists created/reordered, and members joined.
-
-### 🔍 Rich Card Details Modal
-- **Checklists**: Dynamic task checklists with progress percentage meters.
-- **Labels & Cover Colors**: Visual card priority tags and color accents.
-- **Due Dates & Descriptions**: Rich markdown-friendly card descriptions and deadlines.
-- **Activity & Comments Feed**: Complete audit trail of card edits and updates.
-
-### 🎨 Trello-Grade Aesthetics
-- **Modern Palette**: Tailored `#f4f5f7` canvas with crisp `#ffffff` cards and zinc neutral accents.
-- **Segmented Auth UI**: Streamlined Login/Register card with quick demo fill badge and password reveal toggles.
-- **Responsive Layout**: Designed for seamless desktop and tablet workflows.
+- **Kanban boards** with smooth horizontal + vertical drag-and-drop
+- **Real-time collaboration** — any user's card move or update is instantly reflected on every connected screen
+- **Workspace management** — create isolated workspaces, invite team members, control roles
+- **Rich card details** — descriptions, checklists with progress tracking, labels, due dates with overdue indicators, cover colours, and threaded comments
+- **Clean architecture** — monorepo with a fully typed React frontend and an Express REST + Socket.IO backend, both passing `tsc --noEmit` with zero errors
 
 ---
 
-## 🏗️ Architecture
+## Monorepo Structure
 
 ```
-DevFlow/
-├── backend/                  # RESTful API & WebSocket Server
-│   ├── prisma/               # Database schema & seed scripts
-│   │   ├── schema.prisma     # Relational models (User, Workspace, Board, List, Card, Member)
-│   │   └── seed.ts           # Development seed data
-│   ├── src/
-│   │   ├── config/           # Database (Prisma Client) setup
-│   │   ├── controllers/      # Route controllers (Workspace, Board, List, Card, User, Health)
-│   │   ├── middleware/       # JWT Authentication & global error handling
-│   │   ├── routes/           # Express API routers
-│   │   ├── types/            # TypeScript interfaces
-│   │   ├── utils/            # Async handler & custom AppError
-│   │   └── index.ts          # Server entrypoint with Socket.IO room manager
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── frontend/                 # Single Page Application
-│   ├── src/
-│   │   ├── components/       # UI & reusable components (CardDetailModal, shadcn UI)
-│   │   ├── context/          # AuthContext & RouterContext
-│   │   ├── pages/            # View pages (LoginPage, WorkspaceDashboard, BoardPage)
-│   │   ├── services/         # Axios client with interceptors
-│   │   ├── socket/           # Socket.IO client instance
-│   │   ├── App.tsx           # Application route controller
-│   │   └── main.tsx          # React root mount
-│   ├── tsconfig.json
-│   ├── vite.config.ts
-│   └── package.json
-│
-└── docker-compose.yml        # MySQL 8.0 container service
+DevFlow-ProjectManagement/
+├── frontend/               # React 19 + Vite 8 SPA
+│   └── README.md           # Frontend-specific documentation
+├── backend/                # Express 5 + Prisma + Socket.IO API
+│   └── README.md           # Backend-specific documentation
+├── docker-compose.yml      # MySQL 8 database container
+└── README.md               # This file
+```
+
+> Each sub-project has its own detailed README.  
+> → [Frontend README](./frontend/README.md)  
+> → [Backend README](./backend/README.md)
+
+---
+
+## Tech Stack at a Glance
+
+| | Frontend | Backend |
+|---|---|---|
+| **Language** | TypeScript 6 | TypeScript 5.7 |
+| **Framework** | React 19 + Vite 8 | Express 5 |
+| **Styling** | TailwindCSS 3 + shadcn/ui | — |
+| **Database** | — | MySQL 8 via Prisma 6 |
+| **Real-Time** | socket.io-client 4 | Socket.IO 4 |
+| **Auth** | JWT (localStorage) | JWT + bcryptjs |
+| **Drag & Drop** | @hello-pangea/dnd | — |
+| **HTTP** | Axios | — |
+| **Dev Server** | Vite HMR | nodemon + ts-node |
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      BROWSER (React SPA)                 │
+│                                                          │
+│   Page → Custom Hook → Service (Axios)                   │
+│                   ↕ WebSocket (Socket.IO Client)         │
+└──────────────────────────────┬──────────────────────────┘
+                               │ HTTP  /  WS
+┌──────────────────────────────▼──────────────────────────┐
+│                   BACKEND (Express 5)                    │
+│                                                          │
+│   Route → Middleware → Controller → Prisma Client       │
+│                   ↕ Socket.IO Server (broadcast)         │
+└──────────────────────────────┬──────────────────────────┘
+                               │ TCP
+┌──────────────────────────────▼──────────────────────────┐
+│                   DATABASE (MySQL 8)                     │
+│   Users · Workspaces · Boards · Lists · Cards           │
+│   Checklists · Comments · Labels · Attachments          │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Data Hierarchy
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, `@hello-pangea/dnd`, Radix UI, Lucide React, Axios |
-| **Backend** | Node.js, Express 5, TypeScript, Prisma ORM, Socket.IO, bcryptjs, JSON Web Tokens (JWT) |
-| **Database** | MySQL 8.0 (Containerized via Docker) |
-| **Real-time** | WebSocket over Socket.IO Rooms |
+```
+User
+ └── WorkspaceMember  ──►  Workspace
+                                └── Board
+                                      └── List  (ordered by Float)
+                                            └── Card  (ordered by Float)
+                                                  ├── Checklist → ChecklistItem
+                                                  ├── Label (board-scoped)
+                                                  ├── Comment
+                                                  └── Attachment
+```
+
+Float-based ordering means drag-and-drop reordering never requires updating every sibling — only the moved item receives a new fractional order value.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- [Docker & Docker Desktop](https://www.docker.com/) (for MySQL)
-- [npm](https://www.npmjs.com/) or [bun](https://bun.sh/)
+
+| Tool | Version |
+|------|---------|
+| Node.js | >= 20 |
+| npm | >= 10 |
+| Docker + Docker Compose | Any recent version |
 
 ---
 
-### 1. Database Setup (Docker)
+### 1. Clone the repository
 
-Start the MySQL 8.0 container from the project root:
+```bash
+git clone https://github.com/your-username/DevFlow-ProjectManagement.git
+cd DevFlow-ProjectManagement
+```
+
+---
+
+### 2. Start the database
 
 ```bash
 docker-compose up -d
 ```
 
-Verify that the container `devflow-mysql` is running:
-```bash
-docker ps
-```
-*MySQL will be mapped to host port `3307` (`mysql://root:rootpassword@localhost:3307/devflow_db`).*
+This starts a **MySQL 8** container:
+- Host: `localhost`
+- Port: `3307`
+- Database: `devflow_db`
+- Root password: `rootpassword`
 
 ---
 
-### 2. Backend Setup
+### 3. Set up the Backend
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure environment variables (`.env`):
-   ```env
-   PORT=5000
-   NODE_ENV=development
-   DATABASE_URL="mysql://root:rootpassword@localhost:3307/devflow_db"
-   JWT_SECRET="YOUR_SECURE_JWT_SECRET"
-   ```
-
-4. Push schema and seed initial data:
-   ```bash
-   npx prisma db push
-   npx prisma db seed
-   ```
-
-5. Start the backend development server:
-   ```bash
-   npm run dev
-   ```
-   *The server starts at `http://localhost:5000` with live Socket.IO connection.*
-
----
-
-### 3. Frontend Setup
-
-1. Open a new terminal and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open your browser and navigate to:
-   ```
-   http://localhost:5173
-   ```
-
----
-
-## 🔑 Demo Credentials
-
-You can use the built-in credentials below or click the **"Demo Fill"** badge on the login screen:
-
-| Role | Name | Email | Password |
-| :--- | :--- | :--- | :--- |
-| **Admin** | Kartik | `kartik@gmail.com` | `password123` |
-| **Member** | Alex Johnson | `alex@devflow.com` | `password123` |
-| **Member** | Sarah Connor | `sarah@devflow.com` | `password123` |
-
----
-
-## 📡 API Documentation
-
-All protected routes require a Bearer token in the Authorization header:  
-`Authorization: Bearer <token>`
-
-### Authentication
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/user/register` | Register a new user |
-| `POST` | `/api/v1/user/login` | Login and receive JWT token |
-| `GET` | `/api/v1/users/all` | List all users for teammate autocomplete |
-
-### Workspaces
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/workspaces` | Get all workspaces for the authenticated user |
-| `POST` | `/api/v1/workspaces` | Create a new workspace (creator becomes ADMIN) |
-| `GET` | `/api/v1/workspaces/:id` | Get workspace details with boards and members |
-| `PATCH` | `/api/v1/workspaces/:id` | Update workspace name or description |
-| `DELETE` | `/api/v1/workspaces/:id` | Delete workspace and cascade boards |
-| `GET` | `/api/v1/workspaces/:id/boards` | Get all boards in a workspace |
-| `POST` | `/api/v1/workspaces/:id/members` | Invite teammate to workspace |
-| `DELETE` | `/api/v1/workspaces/:id/members/:userId` | Remove member from workspace |
-
-### Boards
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/boards` | List boards (supports `?workspaceId=:id` filter) |
-| `POST` | `/api/v1/boards` | Create a new board with starter columns |
-| `GET` | `/api/v1/boards/:id` | Get full board with lists, cards, and members |
-| `PATCH` | `/api/v1/boards/:id` | Update board title or background theme |
-| `DELETE` | `/api/v1/boards/:id` | Delete board and associated columns/cards |
-| `GET` | `/api/v1/boards/:id/members` | Get board members |
-| `POST` | `/api/v1/boards/:id/members` | Add/Invite member to board |
-| `DELETE` | `/api/v1/boards/:id/members/:userId` | Remove member from board |
-
-### Lists & Cards
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/lists` | Create a list column |
-| `PATCH` | `/api/v1/lists/:id` | Update list title or order |
-| `DELETE` | `/api/v1/lists/:id` | Delete a list column |
-| `POST` | `/api/v1/cards` | Create a card in a list |
-| `PATCH` | `/api/v1/cards/:id` | Update card title, description, cover, due date, or order |
-| `DELETE` | `/api/v1/cards/:id` | Delete card |
-
----
-
-## ⚡ Real-Time WebSocket Events
-
-The application manages collaborative board rooms via Socket.IO:
-
-| Event Name | Direction | Payload | Description |
-| :--- | :--- | :--- | :--- |
-| `join_board` | Client ➔ Server | `boardId` | Joins the specific board room |
-| `leave_board` | Client ➔ Server | `boardId` | Leaves the board room |
-| `card_moved` | Server ➔ Room | `CardItem` | Broadcasts when a card is dragged to a new list/position |
-| `card_created` | Server ➔ Room | `CardItem` | Broadcasts new card addition |
-| `card_updated` | Server ➔ Room | `CardItem` | Broadcasts card edits (cover, details, etc.) |
-| `card_deleted` | Server ➔ Room | `{ id, listId }` | Broadcasts card deletion |
-| `list_created` | Server ➔ Room | `ListColumn` | Broadcasts new column addition |
-| `list_moved` | Server ➔ Room | `{ listId, order }` | Broadcasts column reordering |
-| `list_deleted` | Server ➔ Room | `{ id }` | Broadcasts column deletion |
-| `member_added` | Server ➔ Room | `BoardMemberItem` | Broadcasts new member joining the board |
-| `member_removed` | Server ➔ Room | `{ userId }` | Broadcasts member removal |
-
----
-
-## 🧪 Production Build & Database Tools
-
-### Database GUI (Prisma Studio)
-Inspect your MySQL database tables anytime:
 ```bash
 cd backend
-npx prisma studio
+npm install
+cp .env.example .env
 ```
-Access the studio interface at `http://localhost:5555`.
 
-### Production Build
+Edit `.env`:
+```env
+PORT=5000
+NODE_ENV=development
+DATABASE_URL="mysql://root:rootpassword@localhost:3307/devflow_db"
+JWT_SECRET=your_super_secret_key_here
+JWT_EXPIRES_IN=7d
+```
+
+Run database migrations:
 ```bash
-# Build Backend
-cd backend
-npm run build
+npx prisma migrate dev --name init
+npx prisma generate
+```
 
-# Build Frontend
-cd frontend
-npm run build
+Start the dev server:
+```bash
+npm run dev
+# → http://localhost:5000
 ```
 
 ---
 
-## 📄 License
-This project is open-source under the [ISC License](LICENSE).
+### 4. Set up the Frontend
+
+```bash
+cd ../frontend
+npm install
+```
+
+Create `.env`:
+```env
+VITE_API_URL=http://localhost:5000/api/v1
+```
+
+Start the dev server:
+```bash
+npm run dev
+# → http://localhost:5173
+```
+
+---
+
+### 5. Open in browser
+
+Navigate to **[http://localhost:5173](http://localhost:5173)**, create an account, and start building boards.
+
+---
+
+## Features
+
+### Workspace Management
+| Feature | Description |
+|---------|-------------|
+| Create workspace | Name + optional description |
+| Switch workspaces | Instant sidebar switcher |
+| Invite members | By email address; role: `ADMIN` or `MEMBER` |
+| Edit / Delete | Full lifecycle management |
+| Onboarding state | Clean empty-state UI for new users |
+
+### Board Management
+| Feature | Description |
+|---------|-------------|
+| Create board | Custom title + background colour |
+| Share board | Invite collaborators; quick-add from workspace members |
+| Real-time sync | All board mutations broadcast via Socket.IO |
+
+### Kanban
+| Feature | Description |
+|---------|-------------|
+| Lists (columns) | Create, rename, delete, drag to reorder |
+| Cards | Create, drag vertically within or across lists |
+| Filter | Instant full-text card filter in board navbar |
+
+### Card Detail
+| Feature | Description |
+|---------|-------------|
+| Description | Rich plain-text description |
+| Labels | Colour-coded tag system |
+| Checklists | Multiple checklists, item-level completion, progress bar |
+| Due date | Date picker with overdue badge |
+| Cover colour | Decorative colour strip on card face |
+| Comments | Threaded comments attributed to users |
+| Delete | Soft confirmation + optimistic removal |
+
+---
+
+## API Summary
+
+Base URL: `http://localhost:5000/api/v1`
+
+| Resource | Endpoints |
+|----------|-----------|
+| Auth | `POST /users/register`, `POST /users/login`, `GET /users/me` |
+| Workspaces | `GET/POST /workspaces`, `GET/PATCH/DELETE /workspaces/:id` |
+| Workspace Members | `POST/DELETE /workspaces/:id/members` |
+| Boards | `GET/POST /boards`, `GET/PATCH/DELETE /boards/:id` |
+| Board Members | `POST/DELETE /boards/:id/members` |
+| Lists | `GET/POST /lists`, `PATCH/DELETE /lists/:id`, `PATCH /lists/:id/order` |
+| Cards | `GET/POST /cards`, `PATCH/DELETE /cards/:id`, `PATCH /cards/:id/move` |
+| Checklists | `POST /cards/:id/checklists`, `PATCH .../items/:itemId` |
+| Comments | `POST /cards/:id/comments` |
+
+Full API documentation is in the [backend README](./backend/README.md#api-reference).
+
+---
+
+## Real-Time Events
+
+The Socket.IO server broadcasts the following events to all members of a board room:
+
+```
+card_created  •  card_updated  •  card_moved  •  card_deleted
+list_created  •  list_moved    •  list_deleted
+member_added  •  member_removed
+```
+
+---
+
+## Project Structure (Condensed)
+
+```
+DevFlow-ProjectManagement/
+├── backend/
+│   ├── prisma/schema.prisma         # 14 Prisma models
+│   └── src/
+│       ├── controllers/             # 6 controllers (one per entity)
+│       ├── middleware/              # auth, error, validate
+│       ├── routes/                  # 6 route files
+│       └── validators/              # per-entity request schemas
+│
+└── frontend/
+    └── src/
+        ├── pages/                   # LoginPage, WorkspaceDashboard, BoardPage
+        ├── components/
+        │   ├── board/               # BoardNavbar, BoardColumn, ShareBoardModal, AddListForm
+        │   ├── workspace/           # 7 workspace UI components
+        │   └── card/                # CardDetailModal
+        ├── hooks/                   # useBoardSocket, useWorkspaces
+        ├── services/                # 6 service modules (one per entity)
+        └── context/                 # AuthContext, RouterContext
+```
+
+---
+
+## Development Commands
+
+### Backend
+
+```bash
+npm run dev           # Hot-reload dev server
+npm run build         # Compile TypeScript → /dist
+npx prisma studio     # Visual DB browser at localhost:5555
+npx prisma migrate dev # Apply schema changes
+npx tsc --noEmit      # Type check
+```
+
+### Frontend
+
+```bash
+npm run dev           # Vite dev server with HMR
+npm run build         # Production bundle
+npm run preview       # Preview production build
+npm run lint          # ESLint
+npx tsc --noEmit      # Type check
+```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Commit changes: `git commit -m 'feat: add my feature'`
+4. Push and open a Pull Request
+
+Please keep component files under **300 lines** and follow the established **Controller → Service → Route** (backend) and **Page → Hook → Service** (frontend) patterns.
+
+---
+
+## License
+
+This project is licensed under the **ISC License**.
+
+---
+
+<div align="center">
+  Built with React, Express, Prisma, Socket.IO, and TailwindCSS
+</div>
