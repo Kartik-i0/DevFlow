@@ -10,6 +10,12 @@ import {
   removeWorkspaceMember
 } from '../controllers/workspace.controller';
 import { authenticateUser } from '../middleware/auth.middleware';
+import { validateBody } from '../middleware/validate.middleware';
+import {
+  validateCreateWorkspace,
+  validateUpdateWorkspace,
+  validateWorkspaceMember
+} from '../validators/workspace.validator';
 
 const router = Router();
 
@@ -18,18 +24,18 @@ router.use(authenticateUser);
 
 router.route('/')
   .get(getAllWorkspaces)
-  .post(createWorkspace);
+  .post(validateBody(validateCreateWorkspace), createWorkspace);
 
 router.route('/:id')
   .get(getWorkspaceById)
-  .patch(updateWorkspace)
+  .patch(validateBody(validateUpdateWorkspace), updateWorkspace)
   .delete(deleteWorkspace);
 
 router.route('/:id/boards')
   .get(getWorkspaceBoards);
 
 router.route('/:id/members')
-  .post(addWorkspaceMember);
+  .post(validateBody(validateWorkspaceMember), addWorkspaceMember);
 
 router.route('/:id/members/:userId')
   .delete(removeWorkspaceMember);

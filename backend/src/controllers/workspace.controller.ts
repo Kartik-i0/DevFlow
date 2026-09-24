@@ -40,101 +40,6 @@ export const getAllWorkspaces = asyncHandler(async (req: AuthRequest, res: Respo
       },
       orderBy: { createdAt: 'desc' }
     });
-
-    // Fallback: If user has no workspaces, find first or create one
-    if (workspaces.length === 0) {
-      const firstWs = await prisma.workspace.findFirst({
-        include: {
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatarUrl: true
-                }
-              }
-            }
-          },
-          boards: {
-            include: {
-              lists: { select: { id: true } }
-            }
-          }
-        }
-      });
-
-      if (firstWs) {
-        // Auto-join user to this workspace
-        await prisma.workspaceMember.create({
-          data: {
-            workspaceId: firstWs.id,
-            userId,
-            role: 'ADMIN'
-          }
-        });
-        workspaces = [firstWs];
-      } else {
-        // Create initial workspace
-        const newWs = await prisma.workspace.create({
-          data: {
-            name: 'DevFlow Workspace',
-            description: 'Primary Team Workspace',
-            members: {
-              create: {
-                userId,
-                role: 'ADMIN'
-              }
-            }
-          },
-          include: {
-            members: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    avatarUrl: true
-                  }
-                }
-              }
-            },
-            boards: {
-              include: {
-                lists: { select: { id: true } }
-              }
-            }
-          }
-        });
-        workspaces = [newWs];
-      }
-    }
-  } else {
-    // Unauthenticated fallback: return all workspaces
-    workspaces = await prisma.workspace.findMany({
-      include: {
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatarUrl: true
-              }
-            }
-          }
-        },
-        boards: {
-          include: {
-            lists: { select: { id: true } }
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
   }
 
   // Format response
@@ -312,12 +217,6 @@ export const deleteWorkspace = asyncHandler(async (req: AuthRequest, res: Respon
   const existing = await prisma.workspace.findUnique({ where: { id } });
   if (!existing) {
     throw new AppError('Workspace not found', 404);
-  }
-
-  // Count total workspaces: prevent deleting the last workspace
-  const count = await prisma.workspace.count();
-  if (count <= 1) {
-    throw new AppError('Cannot delete the only remaining workspace.', 400);
   }
 
   await prisma.workspace.delete({ where: { id } });

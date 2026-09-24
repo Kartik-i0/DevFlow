@@ -51,17 +51,15 @@ export const createBoard = asyncHandler(async (req: AuthRequest, res: Response) 
   }
 
   if (!validWorkspaceId) {
-    // Find first existing workspace or create a default one
-    let ws = await prisma.workspace.findFirst();
-    if (!ws) {
-      ws = await prisma.workspace.create({
-        data: {
-          name: 'DevFlow Workspace',
-          description: 'Primary Team Workspace'
-        }
-      });
+    // Check if the user belongs to any workspace
+    const userMember = await prisma.workspaceMember.findFirst({
+      where: { userId: req.user?.userId }
+    });
+
+    if (!userMember) {
+      throw new AppError('Please create a workspace first before creating a board.', 400);
     }
-    validWorkspaceId = ws.id;
+    validWorkspaceId = userMember.workspaceId;
   }
 
   // Ensure current user is a member of the workspace

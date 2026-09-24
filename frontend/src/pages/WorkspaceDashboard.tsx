@@ -231,10 +231,6 @@ export const WorkspaceDashboard: React.FC = () => {
   // 5. Delete Workspace Handler
   const handleDeleteWorkspace = async () => {
     if (!activeWorkspace) return;
-    if (workspaces.length <= 1) {
-      alert('Cannot delete your only remaining workspace.');
-      return;
-    }
     if (!window.confirm(`Are you sure you want to delete "${activeWorkspace.name}" and all its boards? This action cannot be undone.`)) {
       return;
     }
@@ -385,73 +381,84 @@ export const WorkspaceDashboard: React.FC = () => {
               Boards
             </span>
 
-            {/* Workspace Switcher Dropdown */}
-            <div className="relative">
+            {/* Workspace Switcher or New Workspace Button */}
+            {workspaces.length > 0 ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsWorkspaceDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-100 rounded-lg text-xs font-semibold text-zinc-700 transition cursor-pointer"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span className="max-w-36 truncate">{activeWorkspace?.name || 'Workspace'}</span>
+                  <ChevronDown className="w-3 h-3 text-zinc-400" />
+                </button>
+
+                {isWorkspaceDropdownOpen && (
+                  <div
+                    className="absolute left-0 mt-2 w-64 bg-white border border-zinc-200 rounded-2xl shadow-xl p-2 z-40 animate-in fade-in zoom-in-95"
+                    onClick={() => setIsWorkspaceDropdownOpen(false)}
+                  >
+                    <div className="px-3 py-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                      Your Workspaces
+                    </div>
+
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {workspaces.map((ws) => (
+                        <button
+                          key={ws.id}
+                          type="button"
+                          onClick={() => setActiveWorkspace(ws)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition cursor-pointer ${
+                            activeWorkspace?.id === ws.id
+                              ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                              : 'hover:bg-zinc-50 text-zinc-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 uppercase">
+                              {ws.name.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate">{ws.name}</p>
+                              <p className="text-[10px] text-zinc-400 font-normal">
+                                {ws.boardCount} boards • {ws.memberCount} members
+                              </p>
+                            </div>
+                          </div>
+                          {activeWorkspace?.id === ws.id && (
+                            <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="pt-2 mt-2 border-t border-zinc-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsWorkspaceDropdownOpen(false);
+                          setIsCreatingWorkspace(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-xl transition cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Create New Workspace</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={() => setIsWorkspaceDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-100 rounded-lg text-xs font-semibold text-zinc-700 transition cursor-pointer"
+                onClick={() => setIsCreatingWorkspace(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
               >
-                <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-                <span className="max-w-36 truncate">{activeWorkspace?.name || 'Workspace'}</span>
-                <ChevronDown className="w-3 h-3 text-zinc-400" />
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Workspace</span>
               </button>
-
-              {isWorkspaceDropdownOpen && (
-                <div
-                  className="absolute left-0 mt-2 w-64 bg-white border border-zinc-200 rounded-2xl shadow-xl p-2 z-40 animate-in fade-in zoom-in-95"
-                  onClick={() => setIsWorkspaceDropdownOpen(false)}
-                >
-                  <div className="px-3 py-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
-                    Your Workspaces
-                  </div>
-
-                  <div className="space-y-1 max-h-48 overflow-y-auto">
-                    {workspaces.map((ws) => (
-                      <button
-                        key={ws.id}
-                        type="button"
-                        onClick={() => setActiveWorkspace(ws)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition cursor-pointer ${
-                          activeWorkspace?.id === ws.id
-                            ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                            : 'hover:bg-zinc-50 text-zinc-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 uppercase">
-                            {ws.name.charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate">{ws.name}</p>
-                            <p className="text-[10px] text-zinc-400 font-normal">
-                              {ws.boardCount} boards • {ws.memberCount} members
-                            </p>
-                          </div>
-                        </div>
-                        {activeWorkspace?.id === ws.id && (
-                          <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="pt-2 mt-2 border-t border-zinc-100">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsWorkspaceDropdownOpen(false);
-                        setIsCreatingWorkspace(true);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-xl transition cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Create New Workspace</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </nav>
         </div>
 
@@ -477,86 +484,171 @@ export const WorkspaceDashboard: React.FC = () => {
 
       {/* Main Workspace Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-10 space-y-8">
-        {/* Workspace Banner & Control Strip */}
-        <div className="bg-white rounded-2xl border border-zinc-200/90 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-2xl font-black shadow-sm shrink-0 uppercase">
-              {activeWorkspace?.name ? activeWorkspace.name.charAt(0) : 'D'}
+        {loadingWorkspaces ? (
+          <div className="h-64 flex items-center justify-center bg-white rounded-3xl border border-zinc-200/80 text-zinc-400 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+              <span>Loading your workspaces...</span>
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-zinc-900 truncate">
-                  {activeWorkspace?.name || 'DevFlow Workspace'}
+          </div>
+        ) : workspaces.length === 0 ? (
+          /* Welcome Onboarding: Create Your First Workspace */
+          <div className="max-w-xl mx-auto py-8">
+            <div className="bg-white rounded-3xl border border-zinc-200/90 p-8 md:p-10 shadow-lg text-center space-y-6">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mx-auto shadow-xs">
+                <Building2 className="w-8 h-8" />
+              </div>
+
+              <div className="space-y-2">
+                <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+                  Welcome to DevFlow, {user?.name || 'there'}!
                 </h1>
-                <span className="px-2 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[11px] font-semibold text-zinc-600">
-                  Workspace
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                  You don't have any workspaces yet. Create your first workspace to start organizing boards, lists, and collaborating with your team.
+                </p>
+              </div>
+
+              {/* Quick Workspace Creation Form */}
+              <form onSubmit={handleCreateWorkspace} className="space-y-4 text-left pt-2">
+                <div>
+                  <label className="text-xs font-bold text-zinc-700 block mb-1">
+                    Workspace Name *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Corp, Engineering Team, Personal Projects"
+                    value={workspaceName}
+                    onChange={(e) => setWorkspaceName(e.target.value)}
+                    autoFocus
+                    required
+                    className="w-full p-3 text-xs bg-zinc-50 border border-zinc-300 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-zinc-700 block mb-1">
+                    Description <span className="font-normal text-zinc-400">(Optional)</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Brief summary of projects in this workspace..."
+                    value={workspaceDescription}
+                    onChange={(e) => setWorkspaceDescription(e.target.value)}
+                    className="w-full p-3 text-xs bg-zinc-50 border border-zinc-300 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none transition"
+                  />
+                </div>
+
+                {createWorkspaceError && (
+                  <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-2.5 font-medium">
+                    {createWorkspaceError}
+                  </p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={createWorkspaceLoading || !workspaceName.trim()}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-10 rounded-xl shadow-xs gap-2 cursor-pointer"
+                >
+                  {createWorkspaceLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>Create Your Workspace & Get Started</span>
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <div className="pt-4 border-t border-zinc-100 flex items-center justify-center gap-6 text-[11px] text-zinc-400 flex-wrap">
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Unlimited Boards</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Real-Time Sync</span>
+                <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Team Collaboration</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Workspace Banner & Control Strip */}
+            <div className="bg-white rounded-2xl border border-zinc-200/90 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-2xl font-black shadow-sm shrink-0 uppercase">
+                  {activeWorkspace?.name ? activeWorkspace.name.charAt(0) : 'D'}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl font-bold text-zinc-900 truncate">
+                      {activeWorkspace?.name || 'Workspace'}
+                    </h1>
+                    <span className="px-2 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[11px] font-semibold text-zinc-600">
+                      Workspace
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 flex items-center gap-2 mt-1 truncate">
+                    <FolderKanban className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                    <span className="truncate">
+                      {activeWorkspace?.description || 'Collaborative team workspace'}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Members, Settings, New Board */}
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                {/* Manage Members Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    loadAllUsers();
+                    setIsMembersModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition cursor-pointer"
+                  title="Manage Workspace Members"
+                >
+                  <Users className="w-3.5 h-3.5 text-zinc-600" />
+                  <span>Members ({activeWorkspace?.members?.length || activeWorkspace?.memberCount || 0})</span>
+                </button>
+
+                {/* Workspace Settings Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeWorkspace) {
+                      setEditName(activeWorkspace.name);
+                      setEditDescription(activeWorkspace.description || '');
+                      setSettingsError('');
+                      setSettingsSuccess('');
+                    }
+                    setIsSettingsModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition cursor-pointer"
+                  title="Workspace Settings"
+                >
+                  <Settings className="w-3.5 h-3.5 text-zinc-600" />
+                  <span>Settings</span>
+                </button>
+
+                {/* Create Board Button */}
+                <Button
+                  onClick={() => setIsCreatingBoard(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 h-9 px-3.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Create Board
+                </Button>
+              </div>
+            </div>
+
+            {/* Boards Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-zinc-800">
+                  <Layers className="w-4 h-4 text-indigo-600" />
+                  <span>Boards in {activeWorkspace?.name || 'Workspace'}</span>
+                </div>
+                <span className="text-xs font-medium text-zinc-400">
+                  {boards.length} {boards.length === 1 ? 'board' : 'boards'}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 flex items-center gap-2 mt-1 truncate">
-                <FolderKanban className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <span className="truncate">
-                  {activeWorkspace?.description || 'Collaborative team workspace'}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons: Members, Settings, New Board */}
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-            {/* Manage Members Button */}
-            <button
-              type="button"
-              onClick={() => {
-                loadAllUsers();
-                setIsMembersModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition cursor-pointer"
-              title="Manage Workspace Members"
-            >
-              <Users className="w-3.5 h-3.5 text-zinc-600" />
-              <span>Members ({activeWorkspace?.members?.length || activeWorkspace?.memberCount || 0})</span>
-            </button>
-
-            {/* Workspace Settings Button */}
-            <button
-              type="button"
-              onClick={() => {
-                if (activeWorkspace) {
-                  setEditName(activeWorkspace.name);
-                  setEditDescription(activeWorkspace.description || '');
-                  setSettingsError('');
-                  setSettingsSuccess('');
-                }
-                setIsSettingsModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition cursor-pointer"
-              title="Workspace Settings"
-            >
-              <Settings className="w-3.5 h-3.5 text-zinc-600" />
-              <span>Settings</span>
-            </button>
-
-            {/* Create Board Button */}
-            <Button
-              onClick={() => setIsCreatingBoard(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs gap-1.5 h-9 px-3.5"
-            >
-              <Plus className="w-3.5 h-3.5" /> Create Board
-            </Button>
-          </div>
-        </div>
-
-        {/* Boards Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm font-bold text-zinc-800">
-              <Layers className="w-4 h-4 text-indigo-600" />
-              <span>Boards in {activeWorkspace?.name || 'Workspace'}</span>
-            </div>
-            <span className="text-xs font-medium text-zinc-400">
-              {boards.length} {boards.length === 1 ? 'board' : 'boards'}
-            </span>
-          </div>
 
           {loadingBoards ? (
             <div className="h-44 flex items-center justify-center bg-white rounded-2xl border border-zinc-200 text-zinc-400 text-xs">
@@ -609,6 +701,8 @@ export const WorkspaceDashboard: React.FC = () => {
             </div>
           )}
         </div>
+          </>
+        )}
       </main>
 
       {/* -------------------- MODALS -------------------- */}
@@ -970,9 +1064,8 @@ export const WorkspaceDashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleDeleteWorkspace}
-                  disabled={workspaces.length <= 1}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer"
-                  title={workspaces.length <= 1 ? 'Cannot delete only workspace' : 'Delete Workspace'}
+                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition cursor-pointer"
+                  title="Delete Workspace"
                 >
                   Delete Workspace
                 </button>
